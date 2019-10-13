@@ -26,6 +26,8 @@
             $result = $this->db->select($sql);
             if(sizeof($result) != 0):
                 return $userData;
+            else:
+                return null;
             endif;
         }
 
@@ -37,27 +39,18 @@
 
         public function insert($data) {
             $sql = "INSERT INTO users VALUES (NULL, '".$data['username']."', '".$data['name']."', '".$data['surnames']."', '".$data['passwd']."', '".$data['email']."', ".$data['type'].")";
-            $this->db->query($sql);
-            echo ($sql);
-            if ($this->db->affected_rows == 1) {
-                return true;
-            } else {
-                return false;
-            }
+            $consulta = $this->db->insertDeleteUpdate($sql);
+            return $consulta;
 
         }
 
         public function delete($id) {
-            $this->db->query("DELETE FROM users WHERE id='$id'");
-            if ($this->db->affected_rows == 1) {
-                return true;
-            } else {
-                return false;
-            }
+            $sql ="DELETE FROM users WHERE id='$id'";
+            $consulta = $this->db->insertDeleteUpdate($sql);
+            return $consulta;
         }
 
         public function update($data) {
-            //UPDATE users SET tipo = 0, username = 'maria' WHERE id = 1;
             if(isset($data["type"])):
                 $sql = "UPDATE users SET username = '".$data['username']."', nombre = '".$data['nombre']."', 
                 apellidos = '".$data['apellidos']."',passwd = '".$data['passwd']."', email = '".$data['email']."', tipo = '".$data['type']."' WHERE id = '".$data['id']."'";
@@ -65,11 +58,7 @@
                 $sql = "UPDATE users SET username = '".$data['username']."', nombre = '".$data['nombre']."', 
                 apellidos = '".$data['apellidos']."',passwd = '".$data['passwd']."', email = '".$data['email']."' WHERE id = '".$data['id']."'";
             endif;
-            $this->db->query($sql);
-            if ($this->db->affected_rows == 1):
-                return true;
-            else:
-                return false;
-            endif;
+            $consulta = $this->db->insertDeleteUpdate($sql);
+            return $consulta;
         }
     }
