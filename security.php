@@ -21,10 +21,9 @@ class Security {
         $_SESSION["type"] = $type;
     }
 
-    public static function closeSession($data) {
+    public static function closeSession() {
         session_start();
         session_destroy();
-        View::redirect("showFormLogin", $data);
     }
 
     public static function getId() {

@@ -2,22 +2,26 @@
 //include ("config.php");
     include_once("./security.php");
     include_once("./dbconnection.php");
+    include_once("./dbInfo.php");
     class User {
         private $db;
 
         public function __construct() {
-            $this->db = new DBConnector(getenv("DBHOST"), getenv("DBUSER"), getenv("DBPASSWORD"), getenv("DBNAME"));
+            $this->db = new DBConnector("localhost", "root", "", "web");
+            //$this->db = new DBConnector(DBInfo::getDbHost(), DBInfo::getDbUser(), DBInfo::getDbPassword(), DBInfo::getDbName());
         }
 
         public function getForUsername($username, $pass) {
             $sql = "SELECT * FROM users WHERE username = '$username' AND passwd = '$pass'";
-            $info = $this->db->select($sql);
-            if (sizeOf($info) != 0) {
-                Security::openSession($info[0]["id"], $info[0]["tipo"]);
+            //$infor = array();
+            $infor = $this->db->select("SELECT * FROM users WHERE username = '$username' AND passwd = '$pass'");
+            if (count($infor) != 0) {
+                Security::openSession($infor[0]->id, $infor[0]->tipo);
                 $userOk = true;
             } else {
                 $userOk = false;
             }
+            //View::show("error", Security::getType());
             return $userOk;
         }
 
@@ -25,7 +29,7 @@
             $sql = "SELECT * FROM users WHERE id=$id";
             $result = $this->db->select($sql);
             if(sizeof($result) != 0):
-                return $userData;
+                return $result;
             else:
                 return null;
             endif;

@@ -1,9 +1,24 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Titulo</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Maria Del Mar Fernandez Bonillo">
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <div id="todo">
+
 <?php
 $usersList = $data["usersData"];
 $userAdmin = $data["userAdmin"];
     echo "<div id='administracion'>";
         echo "<table border=1 text-align='center'>";
-            echo "<h1>BIENVENID@ ".strtoupper($userAdmin->nombre)."</h1>";
+            echo "<h1>BIENVENID@ ".strtoupper($userAdmin[0]->nombre)."</h1>";
             if(isset($data["mensaje"])):
                 echo "<div style='color:blue'>".$data["mensaje"]."</div>";
             endif;
@@ -33,3 +48,6 @@ $userAdmin = $data["userAdmin"];
         echo "</table>";
     echo "</div>";
 ?>
+    </div>
+    </body>
+</html>

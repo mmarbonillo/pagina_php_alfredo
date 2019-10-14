@@ -52,27 +52,32 @@ class Controller
     }
 
     private function processSignIn() {
-        $data['username'] = $_REQUEST['username'];
-        $data['surnames'] = $_REQUEST['surnames'];
-        $data['name'] = $_REQUEST['name'];
-        $data['email'] = $_REQUEST['email'];
-        $data['type'] = 1;
-        if($_REQUEST["passwd"] == $_REQUEST["passwd2"]):
-            $data['passwd'] = $_REQUEST['passwd'];
-            $resultInsert = $this->user->insert($data);
-            $data = null;
-            if ($resultInsert == 1):
-                $data["mensaje"] = "Te has registrado con éxito. Prueba a entrar :)";
-                View::redirect("showFormLogin", $data);
+        //Compruebo que la sesión no esté iniciada para que ningún usuario pueda registrar nuevos usuarios
+        if(!Security::isSessionOpen()):
+            $data['username'] = $_REQUEST['username'];
+            $data['surnames'] = $_REQUEST['surnames'];
+            $data['name'] = $_REQUEST['name'];
+            $data['email'] = $_REQUEST['email'];
+            $data['type'] = 1;
+            if($_REQUEST["passwd"] == $_REQUEST["passwd2"]):
+                $data['passwd'] = $_REQUEST['passwd'];
+                $resultInsert = $this->user->insert($data);
+                $data = null;
+                if ($resultInsert == 1):
+                    $data["mensaje"] = "Te has registrado con éxito. Prueba a entrar :)";
+                    View::redirect("showFormLogin", $data);
+                else:
+                    $data["mensaje"] = "Error al registrarte";
+                    View::redirect("showFormLogin", $data);
+                endif;
             else:
-                $data["mensaje"] = "Error al registrarte";
+                $data["mensaje"] = "Las contraseñas no coinciden";
                 View::redirect("showFormLogin", $data);
             endif;
         else:
-            $data["mensaje"] = "Las contraseñas no coinciden";
-            View::redirect("showFormLogin", $data);
+            $data["mensaje"] = "No tienes permiso para hacer esto";
+            View::redirect("mainMenu", $data);
         endif;
-        
     }
 
     /**
@@ -103,10 +108,11 @@ class Controller
         //Compruebo por si el usuario intenta acceder a donde no debe
         if(Security::isSessionOpen()):
             $data["mensaje"] = "Has cerrado tu sesión";
-            Security::closeSession($data);
+            Security::closeSession();
+            View::redirect("showFormLogin", $data);
         else:
-            $data["mensaje"] = "Se ha cerrado la sesión por intentar entrar donde no debes. A la próxima se eliminará tu cuenta.";
-            Security::closeSession($data);
+            $data["mensaje"] = "No tienes permiso para acceder a esa página.";
+            View::redirect("showFormLogin", $data);
         endif;
     }
 
@@ -114,7 +120,7 @@ class Controller
      * Muestra formulario de creación de usuarios
      */
     private function formCreateUser() {
-        if (Security::getType() == 0):
+        if(Security::getType() == 0):
             $data["userType"] = 0;
         else:
             $data["userType"] = 1;
@@ -127,52 +133,69 @@ class Controller
      * Procesa el formulario de creación de usuarios
      */
     private function processCreateUser() {
-        $data['username'] = $_REQUEST['username'];
-        $data['passwd'] = $_REQUEST['passwd'];
-        $data['surnames'] = $_REQUEST['surnames'];
-        $data['name'] = $_REQUEST['name'];
-        $data['email'] = $_REQUEST['email'];
-        if (isset($_REQUEST['type']))
-            $data['type'] = $_REQUEST['type'];
-        else
-            $data['type'] = 1;
-        $resultInsert = $this->user->insert($data);
-        $data = null;
-        if ($resultInsert == 1) {
-            $data["mensaje"] = "Usuario insertado con éxito";
+        if(Security::isSessionOpen() && Security::getType() == 0):
+            $data['username'] = $_REQUEST['username'];
+            $data['passwd'] = $_REQUEST['passwd'];
+            $data['surnames'] = $_REQUEST['surnames'];
+            $data['name'] = $_REQUEST['name'];
+            $data['email'] = $_REQUEST['email'];
+            if (isset($_REQUEST['type']))
+                $data['type'] = $_REQUEST['type'];
+            else
+                $data['type'] = 1;
+            $resultInsert = $this->user->insert($data);
+            $data = null;
+            if ($resultInsert == 1) {
+                $data["mensaje"] = "Usuario insertado con éxito";
+                View::redirect("mainMenu", $data);
+            } else {
+                $data["mensaje"] = "Error al insertar";
+                View::redirect("mainMenu", $data);
+            }
+        else:
+            $data["mensaje"] = "No tienes permisos para hacer eso";
             View::redirect("mainMenu", $data);
-        } else {
-            $data["mensaje"] = "Error al insertar";
-            View::redirect("mainMenu", $data);
-        }
+        endif;
     }
 
     /**
      * Muestra el formulario de actualización de usuarios
      */
     private function formModifyUser() {
-        $data["userData"] = $this->user->getAllFromOneUser($_REQUEST["usr"]);
-        View::show("formModifyUser", $data);
+        if(Security::isSessionOpen() && (Security::getType() == 0 || Security::getType() == $_REQUEST["id"])):
+            $data["userData"] = $this->user->getAllFromOneUser($_REQUEST["usr"]);
+            View::redirect("formModifyUser", $data);
+        else:
+            $data["mensaje"] = "No tienes permisos para acceder a esa página";
+            View::redirect("showFormLogin", $data);
+        endif;
     }
 
     private function processModifyUser() {
-        $data["id"] = $_REQUEST["usr"];
-        $data["username"] = $_REQUEST["username"];
-        $data["nombre"] = $_REQUEST["name"];
-        $data["apellidos"] = $_REQUEST["surnames"];
-        $data["passwd"] = $_REQUEST["passwd"];
-        $data["email"] = $_REQUEST["email"];
-        if(isset($_REQUEST["type"])):
-            $data["type"] = $_REQUEST["type"];
-        endif;
-        //View::show("error", $data);
-        $result = $this->user->update($data);
-        if($result):
-            $data["mensaje"] = "Usuario modificado con éxito";
-            View::redirect("mainMenu", $data);
+        //Compruebo que el usuario sea administrador o que sea el mismo que tiene iniciada la sesión
+        if(Security::isSessionOpen() && (Security::getType() == 0 || Security::getType() == $_REQUEST["id"])):
+            $data["id"] = $_REQUEST["usr"];
+            $data["username"] = $_REQUEST["username"];
+            $data["nombre"] = $_REQUEST["name"];
+            $data["apellidos"] = $_REQUEST["surnames"];
+            $data["passwd"] = $_REQUEST["passwd"];
+            $data["email"] = $_REQUEST["email"];
+            if(isset($_REQUEST["type"])):
+                $data["type"] = $_REQUEST["type"];
+            endif;
+            //View::show("error", $data);
+            $result = $this->user->update($data);
+            if($result):
+                $data["mensaje"] = "Usuario modificado con éxito";
+                View::redirect("mainMenu", $data);
+            else:
+                $data["mensaje"] = "No se ha podido modificar el usuario";
+                View::redirect("mainMenu", $data);
+            endif;
         else:
-            $data["mensaje"] = "No se ha podido modificar el usuario";
-            View::redirect("mainMenu", $data);
+            $data["mensaje"] = "Se te ha cerrado la sesión por intentar acceder a donde no debes.";
+            Security::closeSession();
+            View::redirect("showFormLogin", $data);
         endif;
     }
 
@@ -180,7 +203,7 @@ class Controller
      * Elimina un usuario
      */
     private function deleteUser() {
-        if(Security::isSessionOpen() && Security::getId() == 0):
+        if(Security::isSessionOpen() && Security::getType() == 0):
             $resultDelete = $this->user->delete($_REQUEST['usr']);
             if ($resultDelete) {
                 $data["mensaje"] = "Usuario borrado con éxito";
@@ -190,24 +213,31 @@ class Controller
             View::redirect("mainMenu", $data);
         else:
             $data["mensaje"] = "No tienes permisos para entrar aquí";
-            View::redirect("");
+            View::redirect("closeSession", $data);
         endif;
     }
 
     private function deleteOwnUser() {
-        $resultDelete = $this->user->delete($_REQUEST['usr']);
-        if ($resultDelete) {
-            $data["mensaje"] = "Usuario borrado con éxito";
-        } else {
-            $data["mensaje"] = "Error al borrar";
-        }
-        View::redirect("showFormLogin", $data);
+        if(Security::isSessionOpen() && Security::getType() == $_REQUEST["usr"]):
+            $resultDelete = $this->user->delete($_REQUEST['usr']);
+            if ($resultDelete) {
+                $data["mensaje"] = "Usuario borrado con éxito";
+            } else {
+                $data["mensaje"] = "Error al borrar";
+            }
+            Security::closeSession($data);
+            //View::redirect("showFormLogin", $data);
+        else:
+            $data["mensaje"] = "No tienes permisos para acceder a esa página";
+            Security::closeSession();
+            View::redirect("showFormLogin", $data);
+        endif;
     }
 
     /**
      * Muestra una vista de error
      */
     private function error() {
-        View::error();
+        View::show("error");
     }
 } // class
