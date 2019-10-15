@@ -8,18 +8,18 @@ class DBInfo {
     private static $DBNAME = "web";
 
     public static function getDbHost(){
-        return $DBHOST;
+        return self::$DBHOST;
     }
 
     public static function getDbUser() {
-        return $DBUSER;
+        return self::$DBUSER;
     }
 
     public static function getDbPassword() {
-        return $DBPASSWD;
+        return self::$DBPASSWD;
     }
 
     public static function getDbName() {
-        return $DBNAME;
+        return self::$DBNAME;
     }
 }

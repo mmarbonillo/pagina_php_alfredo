@@ -7,8 +7,8 @@
         private $db;
 
         public function __construct() {
-            $this->db = new DBConnector("localhost", "root", "", "web");
-            //$this->db = new DBConnector(DBInfo::getDbHost(), DBInfo::getDbUser(), DBInfo::getDbPassword(), DBInfo::getDbName());
+            //$this->db = new DBConnector("localhost", "root", "", "web");
+            $this->db = new DBConnector(DBInfo::getDbHost(), DBInfo::getDbUser(), DBInfo::getDbPassword(), DBInfo::getDbName());
         }
 
         public function getForUsername($username, $pass) {

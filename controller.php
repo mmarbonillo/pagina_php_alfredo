@@ -162,9 +162,9 @@ class Controller
      * Muestra el formulario de actualización de usuarios
      */
     private function formModifyUser() {
-        if(Security::isSessionOpen() && (Security::getType() == 0 || Security::getType() == $_REQUEST["id"])):
+        if(Security::isSessionOpen() && (Security::getType() == 0 || Security::getId() == $_REQUEST["usr"])):
             $data["userData"] = $this->user->getAllFromOneUser($_REQUEST["usr"]);
-            View::redirect("formModifyUser", $data);
+            View::show("formModifyUser", $data);
         else:
             $data["mensaje"] = "No tienes permisos para acceder a esa página";
             View::redirect("showFormLogin", $data);
@@ -173,7 +173,7 @@ class Controller
 
     private function processModifyUser() {
         //Compruebo que el usuario sea administrador o que sea el mismo que tiene iniciada la sesión
-        if(Security::isSessionOpen() && (Security::getType() == 0 || Security::getType() == $_REQUEST["id"])):
+        if(Security::isSessionOpen() && (Security::getType() == 0 || Security::getId() == $_REQUEST["usr"])):
             $data["id"] = $_REQUEST["usr"];
             $data["username"] = $_REQUEST["username"];
             $data["nombre"] = $_REQUEST["name"];
@@ -218,7 +218,7 @@ class Controller
     }
 
     private function deleteOwnUser() {
-        if(Security::isSessionOpen() && Security::getType() == $_REQUEST["usr"]):
+        if(Security::isSessionOpen() && Security::getId() == $_REQUEST["usr"]):
             $resultDelete = $this->user->delete($_REQUEST['usr']);
             if ($resultDelete) {
                 $data["mensaje"] = "Usuario borrado con éxito";
@@ -226,7 +226,7 @@ class Controller
                 $data["mensaje"] = "Error al borrar";
             }
             Security::closeSession($data);
-            //View::redirect("showFormLogin", $data);
+            View::redirect("showFormLogin", $data);
         else:
             $data["mensaje"] = "No tienes permisos para acceder a esa página";
             Security::closeSession();
