@@ -1,0 +1,4 @@
+INSERT INTO users VALUES (NULL, 'mmarbonillo', 'Maria del Mar', 'Fernandez Bonillo', 'mmarbonillo', 'maria@gmail.com', 0);
+INSERT INTO users VALUES (2, 'peri', 'Perico', 'Lopez Lopez', 'peri', 'perico@gmail.com', 1);
+INSERT INTO users VALUES (3, 'algarabia', 'Alba', 'Gimenez Martinez', 'algarabia', 'alba@gmail.com', 1);
+INSERT INTO users VALUES (NULL, 'jose', 'Jose', 'Bousfanj', 'jose', 'jose@gmail.com', 0);
